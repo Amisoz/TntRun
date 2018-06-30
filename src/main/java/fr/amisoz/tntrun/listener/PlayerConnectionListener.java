@@ -3,7 +3,6 @@ package fr.amisoz.tntrun.listener;
 import fr.amisoz.tntrun.TntRun;
 import fr.amisoz.tntrun.game.GameState;
 import fr.amisoz.tntrun.game.task.StartTask;
-import net.minecraft.server.v1_12_R1.WorldGenEndCity;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -36,8 +35,8 @@ public class PlayerConnectionListener implements Listener {
             TntRun.getGameManager().setGameState(GameState.LOADING);
             tntRun.logToConsole("GameState : LOADING");
             Bukkit.broadcastMessage(tntRun.prefix + "La partie va démarrée dans " + tntRun.startDuration + " secondes.");
-            StartTask startTask = new StartTask(tntRun);
-            startTask.runTaskTimer(tntRun, 0, 20);
+            tntRun.startTask = new StartTask(tntRun);
+            tntRun.startTask.runTaskTimer(tntRun, 0, 20);
         }
     }
 
@@ -45,8 +44,20 @@ public class PlayerConnectionListener implements Listener {
     public void onQuit(PlayerQuitEvent event){
         Player player = event.getPlayer();
         tntRun.removePlayerInGame(player);
-        int slotsActuel = Bukkit.getOnlinePlayers().size();
+        int slotsActuel = (Bukkit.getOnlinePlayers().size() -1);
+        if(TntRun.getGameManager().getGameState() == GameState.GAME){
+            if(slotsActuel == 1){
+                Bukkit.getScheduler().cancelAllTasks();
+                TntRun.getGameManager().setGameState(GameState.FINISH);
+                Bukkit.getOnlinePlayers().forEach(winner -> winner.kickPlayer("§aVous avez gagné !"));
+            }
+        }
         event.setQuitMessage(tntRun.prefix + player.getName() + ChatColor.GRAY  +" a quitté la partie. " + ChatColor.YELLOW + "(" + slotsActuel + "/" + tntRun.getSlots() + ")");
+        if(TntRun.getGameManager().getGameState() == GameState.LOADING) {
+            tntRun.startTask.cancel();
+            TntRun.getGameManager().setGameState(GameState.WAITING);
+            Bukkit.broadcastMessage(tntRun.prefix + "Attente de joueur supplémentaire...");
+        }
     }
 
     @EventHandler

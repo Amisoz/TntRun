@@ -2,10 +2,8 @@ package fr.amisoz.tntrun;
 
 import fr.amisoz.tntrun.game.GameManager;
 import fr.amisoz.tntrun.game.GameState;
-import fr.amisoz.tntrun.listener.BreakBlockListener;
-import fr.amisoz.tntrun.listener.EntityDamagedListener;
-import fr.amisoz.tntrun.listener.FoodLevelChangeListener;
-import fr.amisoz.tntrun.listener.PlayerConnectionListener;
+import fr.amisoz.tntrun.game.task.StartTask;
+import fr.amisoz.tntrun.listener.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -22,6 +20,7 @@ public class TntRun extends JavaPlugin {
     public String prefix = ChatColor.GRAY + "[" + ChatColor.YELLOW + "TNTRUN" + ChatColor.GRAY + "] " + ChatColor.YELLOW;
     private int slots;
     public int startDuration = 10;
+    public StartTask startTask;
 
     @Override
     public void onEnable() {
@@ -32,7 +31,7 @@ public class TntRun extends JavaPlugin {
 
         gameManager.setGameState(GameState.WAITING);
 
-        logToConsole("TntRun loaded.");
+        logToConsole("TntRun loaded. ");
     }
 
     private void registerListener(){
@@ -41,6 +40,7 @@ public class TntRun extends JavaPlugin {
         pluginManager.registerEvents(new EntityDamagedListener(), this);
         pluginManager.registerEvents(new PlayerConnectionListener(this), this);
         pluginManager.registerEvents(new BreakBlockListener(), this);
+        pluginManager.registerEvents(new PlayerMoveListener(this), this);
     }
 
     public int getSlots() {
